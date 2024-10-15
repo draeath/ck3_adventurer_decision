@@ -1,0 +1,112 @@
+#############################################
+# Abandom Realm to Become an Adventurer     #
+# by Joe Parkin                             #
+# edited by draeath, inspired by C4sp3R     #
+#############################################
+
+draeath_become_landless_adventurer_decision = {
+    picture = {
+        reference = "gfx/interface/illustrations/decisions/ep3_decision_laamp_neutral_mountain.dds"
+    }
+    # allow it to sit at the bottom of it's section
+    sort_order = 0
+    # AI shouldn't ever do this one, so don't check for it
+    ai_check_interval = 0
+
+    desc = become_landless_adventurer_decision_desc
+    decision_group_type = major
+    selection_tooltip = become_landless_adventurer_decision_tooltip
+
+    is_shown = {
+        has_ep3_dlc_trigger = yes
+        # We don't want AI to "see" this decision
+        is_ai = no
+        is_landed = yes
+        save_temporary_scope_as = potential_laamp_temp
+        can_be_combatant_based_on_gender_trigger = { ARMY_OWNER = scope:potential_laamp_temp }
+    }
+
+    is_valid = {
+        is_valid_for_laampdom = yes
+        custom_tooltip = {
+            text = become_landless_adventurer_decision_hof_tt
+            NOT = { faith.religious_head_title.holder = root }
+        }
+    }
+
+    is_valid_showing_failures_only = {
+        is_at_war = no
+        is_alive = yes
+        is_available_adult = yes
+        has_contagious_deadly_disease_trigger = no
+    }
+
+    effect = {
+        save_scope_as = adventurer
+        if = {
+            limit = {
+                player_heir ?= {
+                    NOT = { this = root }
+                    is_adult = yes
+                }
+            }
+            player_heir = {
+                save_scope_as = laamp_heir
+                save_scope_as = laamp_inheritor
+                custom_tooltip = become_landless_adventurer_decision_title_scope_tt
+            }
+        }
+        else_if = {
+            limit = { is_independent_ruler = no }
+            liege = {
+                save_scope_as = laamp_liege
+                save_scope_as = laamp_inheritor
+                custom_tooltip = become_landless_adventurer_decision_title_scope_tt
+            }
+        }
+        else = {
+            custom_tooltip = become_landless_adventurer_decision_title_created_tt
+            if = {
+                limit = {
+                    NOT = { exists = scope:laamp_inheritor }
+                }
+                hidden_effect_new_object = {
+                    create_character = {
+                        template = laamp_inheritor_template
+                        culture = root.capital_county.culture
+                        faith = root.capital_county.faith
+                        dynasty = generate
+                        location = root.capital_province
+                        after_creation = {
+                            save_scope_as = laamp_inheritor
+                            add_character_flag = new_laamp_inheritor
+                        }
+                    }
+                }
+            }
+        }
+        create_landless_adventurer_title_tooltip_effect = yes
+        show_as_tooltip = {
+            add_prestige = medium_prestige_gain
+            add_character_modifier = {
+                modifier = ep3_voluntary_laamp_character_modifier
+                years = 5
+            }
+        }
+        trigger_event = { id = ep3_laamps.0030 }
+        stress_impact = {
+            craven = minor_stress_impact_gain
+            content = minor_stress_impact_gain
+            lazy = minor_stress_impact_gain
+        }
+    }
+
+    ai_potential = {
+        always = no
+    }
+
+    ai_will_do = {
+        base = 0
+        factor = 0
+    }
+}
